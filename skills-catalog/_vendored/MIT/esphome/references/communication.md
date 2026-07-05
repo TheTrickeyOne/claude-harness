@@ -1,0 +1,1035 @@
+# ESPHome Communication Protocols Reference
+
+Complete reference for communication buses and protocols.
+
+## Table of Contents
+- [I2C Bus](#i2c-bus)
+- [SPI Bus](#spi-bus)
+- [UART](#uart)
+- [1-Wire](#1-wire)
+- [CAN Bus](#can-bus)
+- [Modbus](#modbus)
+- [ESP-NOW](#esp-now)
+- [LoRa - SX126x / SX127x](#lora---sx126x--sx127x)
+- [USB CDC-ACM](#usb-cdc-acm)
+
+---
+
+## I2C Bus
+
+Two-wire serial bus for sensors and peripherals.
+
+### Basic Setup
+```yaml
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: true  # Scan for devices on boot
+```
+
+### ESP32 Default Pins
+| Board | SDA | SCL |
+|-------|-----|-----|
+| ESP32 | GPIO21 | GPIO22 |
+| ESP32-S2 | GPIO8 | GPIO9 |
+| ESP32-S3 | GPIO8 | GPIO9 |
+| ESP32-C3 | GPIO8 | GPIO9 |
+| ESP8266 | GPIO4 | GPIO5 |
+
+### Multiple I2C Buses
+```yaml
+i2c:
+  - id: bus_a
+    sda: GPIO21
+    scl: GPIO22
+  - id: bus_b
+    sda: GPIO18
+    scl: GPIO19
+
+sensor:
+  - platform: bme280_i2c
+    i2c_id: bus_a
+    address: 0x76
+    # ...
+
+  - platform: bme280_i2c
+    i2c_id: bus_b
+    address: 0x76
+    # ...
+```
+
+### I2C Options
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `sda` | pin | platform | Data pin |
+| `scl` | pin | platform | Clock pin |
+| `scan` | bool | false | Scan bus on startup |
+| `frequency` | freq | 50kHz | Bus speed |
+
+### Fast Mode (400kHz)
+```yaml
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  frequency: 400kHz
+```
+
+### I2C Scan Action
+```yaml
+button:
+  - platform: template
+    name: "I2C Scan"
+    on_press:
+      - lambda: |-
+          Wire.begin();
+          for (byte address = 1; address < 127; address++) {
+            Wire.beginTransmission(address);
+            if (Wire.endTransmission() == 0) {
+              ESP_LOGI("i2c", "Device found at 0x%02X", address);
+            }
+          }
+```
+
+### Common I2C Addresses
+| Device | Address |
+|--------|---------|
+| SSD1306 OLED | 0x3C or 0x3D |
+| BME280/BMP280 | 0x76 or 0x77 |
+| SHT3x | 0x44 or 0x45 |
+| AHT10/20 | 0x38 |
+| HTU21D | 0x40 |
+| BH1750 | 0x23 or 0x5C |
+| PCF8574 | 0x20-0x27 |
+| PCA9685 | 0x40-0x7F |
+| ADS1115 | 0x48-0x4B |
+
+---
+
+## SPI Bus
+
+High-speed serial bus for displays, SD cards, and sensors.
+
+### Basic Setup
+```yaml
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+```
+
+### ESP32 Default Pins
+| Bus | CLK | MOSI | MISO |
+|-----|-----|------|------|
+| VSPI | GPIO18 | GPIO23 | GPIO19 |
+| HSPI | GPIO14 | GPIO13 | GPIO12 |
+
+### SPI Options
+| Option | Type | Description |
+|--------|------|-------------|
+| `clk_pin` | pin | Clock pin (required) |
+| `mosi_pin` | pin | Master Out Slave In |
+| `miso_pin` | pin | Master In Slave Out |
+| `interface` | string | hardware or any |
+
+### Multiple SPI Buses
+```yaml
+spi:
+  - id: spi_bus_1
+    clk_pin: GPIO18
+    mosi_pin: GPIO23
+    miso_pin: GPIO19
+  - id: spi_bus_2
+    clk_pin: GPIO14
+    mosi_pin: GPIO13
+    miso_pin: GPIO12
+```
+
+### SPI Device Example
+```yaml
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+
+display:
+  - platform: ili9xxx
+    model: ILI9341
+    spi_id: spi_bus_1
+    cs_pin: GPIO5
+    dc_pin: GPIO16
+    # ...
+```
+
+---
+
+## UART
+
+Serial communication for sensors and devices.
+
+### Basic Setup
+```yaml
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+```
+
+### UART Options
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `tx_pin` | pin | - | Transmit pin |
+| `rx_pin` | pin | - | Receive pin |
+| `baud_rate` | int | required | Baud rate |
+| `data_bits` | int | 8 | Data bits |
+| `parity` | string | NONE | NONE/EVEN/ODD |
+| `stop_bits` | int | 1 | Stop bits |
+| `rx_buffer_size` | int | 256 | RX buffer size |
+
+### Multiple UARTs
+```yaml
+uart:
+  - id: uart_sensor
+    tx_pin: GPIO17
+    rx_pin: GPIO16
+    baud_rate: 9600
+  - id: uart_debug
+    tx_pin: GPIO1
+    rx_pin: GPIO3
+    baud_rate: 115200
+```
+
+### UART Debug (Log Raw Data)
+```yaml
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+  debug:
+    direction: BOTH
+    dummy_receiver: false
+    after:
+      timeout: 100ms
+    sequence:
+      - lambda: |-
+          UARTDebug::log_hex(direction, bytes, ' ');
+```
+
+### UART Write Actions
+```yaml
+on_...:
+  # Write text
+  - uart.write: "Hello\r\n"
+
+  # Write bytes
+  - uart.write: [0x55, 0xAA, 0x01]
+
+  # Write with lambda
+  - uart.write: !lambda |-
+      return {0x55, 0xAA, (uint8_t)(value & 0xFF)};
+```
+
+### Read UART Data
+```yaml
+uart:
+  id: my_uart
+  # ...
+
+interval:
+  - interval: 100ms
+    then:
+      - lambda: |-
+          while (id(my_uart).available()) {
+            char c;
+            id(my_uart).read_byte(&c);
+            ESP_LOGD("uart", "Received: %c", c);
+          }
+```
+
+### Custom UART Sensor
+```yaml
+uart:
+  id: my_uart
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+
+sensor:
+  - platform: custom
+    lambda: |-
+      auto my_sensor = new MyUartSensor(id(my_uart));
+      App.register_component(my_sensor);
+      return {my_sensor};
+    sensors:
+      - name: "Custom Sensor"
+```
+
+---
+
+## 1-Wire
+
+Single-wire bus for Dallas temperature sensors.
+
+### Dallas Temperature Sensors
+```yaml
+one_wire:
+  - platform: gpio
+    pin: GPIO4
+
+sensor:
+  - platform: dallas_temp
+    address: 0x1234567890ABCDEF
+    name: "Temperature"
+```
+
+### Find Sensor Addresses
+```yaml
+# Enable logging, check logs for addresses
+logger:
+  level: DEBUG
+
+one_wire:
+  - platform: gpio
+    pin: GPIO4
+```
+
+### Multiple Sensors
+```yaml
+one_wire:
+  - platform: gpio
+    pin: GPIO4
+
+sensor:
+  - platform: dallas_temp
+    address: 0x1234567890ABCDEF
+    name: "Sensor 1"
+  - platform: dallas_temp
+    address: 0xFEDCBA0987654321
+    name: "Sensor 2"
+```
+
+### Use Index Instead of Address
+```yaml
+sensor:
+  - platform: dallas_temp
+    index: 0
+    name: "First Sensor"
+  - platform: dallas_temp
+    index: 1
+    name: "Second Sensor"
+```
+
+### 1-Wire Protocol Fix (2026.5.0+)
+
+ESPHome 2026.5.0 fixed a long-standing 1-Wire protocol violation. `OneWireBus::skip()` previously issued the SKIP ROM command without first performing a bus reset, which violated the Dallas/Maxim 1-Wire spec. The symptom most users saw was DS18B20 sensors occasionally reporting the power-on default values (25.0 °C or 85.0 °C) instead of real readings, or going silent after a hot-plug.
+
+**End-user impact:** none if you only use YAML. The fix is transparent and DS18B20 readings should become noticeably more reliable.
+
+**External component impact:** if you maintain an external component that calls `OneWireBus::skip()` from C++, note that its signature changed:
+
+```cpp
+// Before 2026.5.0 (returns void):
+bus->skip();
+
+// 2026.5.0 and later (returns bool):
+if (!bus->skip()) {
+    // reset/presence pulse failed - bail out, don't write to a dead bus
+    return;
+}
+```
+
+The new return value reports whether the bus reset succeeded. False means no device responded (bus disconnected, all sensors gone, etc.) and you should not proceed with writes.
+
+---
+
+## CAN Bus
+
+Controller Area Network for automotive and industrial use.
+
+### ESP32 CAN (Built-in TWAI)
+```yaml
+canbus:
+  - platform: esp32_can
+    id: my_can
+    tx_pin: GPIO5
+    rx_pin: GPIO4
+    can_id: 0x100
+    bit_rate: 500kbps
+```
+
+### MCP2515 (SPI CAN Controller)
+```yaml
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+
+canbus:
+  - platform: mcp2515
+    id: my_can
+    cs_pin: GPIO5
+    can_id: 0x100
+    bit_rate: 500kbps
+    clock: 8MHZ  # Crystal frequency
+```
+
+### CAN Options
+| Option | Type | Description |
+|--------|------|-------------|
+| `can_id` | int | Default CAN ID for sending |
+| `bit_rate` | string | 125/250/500/1000kbps |
+| `use_extended_id` | bool | Use 29-bit IDs |
+
+### Send CAN Message
+```yaml
+on_...:
+  - canbus.send:
+      can_id: 0x123
+      data: [0x01, 0x02, 0x03]
+
+  # With lambda
+  - canbus.send:
+      can_id: 0x123
+      data: !lambda |-
+        return {0x01, (uint8_t)(value >> 8), (uint8_t)(value & 0xFF)};
+```
+
+### Receive CAN Messages
+```yaml
+canbus:
+  - platform: esp32_can
+    id: my_can
+    tx_pin: GPIO5
+    rx_pin: GPIO4
+    can_id: 0x100
+    bit_rate: 500kbps
+    on_frame:
+      - lambda: |-
+          ESP_LOGD("can", "ID: 0x%03X, Data: %02X %02X %02X",
+                   x.can_id, x.data[0], x.data[1], x.data[2]);
+```
+
+### CAN Binary Sensor Trigger
+```yaml
+binary_sensor:
+  - platform: template
+    name: "CAN Signal"
+    id: can_signal
+
+canbus:
+  on_frame:
+    - if:
+        condition:
+          lambda: "return x.can_id == 0x200 && x.data[0] == 0x01;"
+        then:
+          - binary_sensor.template.publish:
+              id: can_signal
+              state: true
+```
+
+### CAN Sensor (Parse Data)
+```yaml
+sensor:
+  - platform: template
+    id: can_value
+    name: "CAN Value"
+
+canbus:
+  on_frame:
+    - if:
+        condition:
+          lambda: "return x.can_id == 0x300;"
+        then:
+          - sensor.template.publish:
+              id: can_value
+              state: !lambda |-
+                return (x.data[0] << 8) | x.data[1];
+```
+
+---
+
+## Modbus
+
+Industrial protocol for PLCs and sensors.
+
+### Modbus Controller (Master)
+```yaml
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+  parity: EVEN
+
+modbus:
+  id: modbus_hub
+
+modbus_controller:
+  - id: controller1
+    address: 0x01
+    modbus_id: modbus_hub
+    update_interval: 5s
+```
+
+### Read Holding Registers
+```yaml
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: controller1
+    name: "Temperature"
+    register_type: holding
+    address: 0x0000
+    value_type: S_WORD  # Signed 16-bit
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+```
+
+### Register Types
+| Type | Description |
+|------|-------------|
+| `holding` | Read/Write registers (function 3/6/16) |
+| `read` | Read-only input registers (function 4) |
+| `coil` | Read/Write single bit (function 1/5) |
+| `discrete_input` | Read-only single bit (function 2) |
+
+### Value Types
+| Type | Description |
+|------|-------------|
+| `U_WORD` | Unsigned 16-bit |
+| `S_WORD` | Signed 16-bit |
+| `U_DWORD` | Unsigned 32-bit |
+| `S_DWORD` | Signed 32-bit |
+| `U_DWORD_R` | 32-bit, reversed word order |
+| `FP32` | 32-bit float |
+| `FP32_R` | 32-bit float, reversed |
+
+### Read Multiple Registers
+```yaml
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: controller1
+    name: "Energy Total"
+    register_type: holding
+    address: 0x0048
+    value_type: U_DWORD
+    unit_of_measurement: "kWh"
+    filters:
+      - multiply: 0.01
+```
+
+### Write to Register
+```yaml
+number:
+  - platform: modbus_controller
+    modbus_controller_id: controller1
+    name: "Setpoint"
+    register_type: holding
+    address: 0x0100
+    value_type: U_WORD
+    min_value: 0
+    max_value: 100
+
+switch:
+  - platform: modbus_controller
+    modbus_controller_id: controller1
+    name: "Relay Output"
+    register_type: coil
+    address: 0x0000
+```
+
+### Custom Modbus Commands
+```yaml
+on_...:
+  - modbus_controller.set_value:
+      id: controller1
+      address: 0x0100
+      value: 50
+
+  # Read manually
+  - lambda: |-
+      uint16_t result;
+      id(controller1).read_holding_register(0x0000, &result, 1);
+```
+
+### Modbus Server (Slave) - 2026.5.0+
+
+In ESPHome 2026.5.0 the server (slave) mode was split out of `modbus_controller` into its own `modbus_server` component, with about 60% flash savings (1.8 KB vs 4.5 KB). Use this when your ESP32 needs to **answer** Modbus requests from an external master (PLC, SCADA, or another HA-side master).
+
+```yaml
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+
+modbus:
+  id: modbus_bus
+
+modbus_server:
+  - id: my_server
+    address: 0x01            # this device's slave address
+    modbus_id: modbus_bus
+    courtesy_response: true  # renamed from server_courtesy_response in 2026.5.0
+    registers:               # renamed from server_registers in 2026.5.0
+      - address: 0x0100
+        value_type: U_WORD
+        lambda: "return id(my_sensor).state;"
+      - address: 0x0101
+        value_type: FP32
+        lambda: "return id(my_temp).state;"
+```
+
+**Migration from old wedged server mode (pre-2026.5.0):**
+
+| Old (`modbus_controller`) | New (`modbus_server`) |
+|---|---|
+| `modbus_controller:` (top key) | `modbus_server:` (top key) |
+| `server_registers:` | `registers:` |
+| `server_courtesy_response:` | `courtesy_response:` |
+
+Combined client + server on the same device works fine - keep `modbus_controller:` for the client side and add `modbus_server:` for the server side.
+
+---
+
+## ESP-NOW
+
+*Since ESPHome 2025.8.0 -- ESP32 only*
+
+Device-to-device WiFi communication without a router or access point. Up to 250 bytes per message. Supports peer-to-peer and broadcast. Can coexist with WiFi on the same channel.
+
+Use cases: sensor nodes sending data directly to a hub device, mesh-like setups without infrastructure.
+
+### Basic Setup
+```yaml
+esp_now:
+  id: espnow_component
+  peers:
+    - mac_address: AA:BB:CC:DD:EE:FF
+      id: hub_peer
+
+sensor:
+  - platform: dht
+    pin: GPIO4
+    temperature:
+      name: "Temperature"
+      id: temp_sensor
+    humidity:
+      name: "Humidity"
+      id: hum_sensor
+
+interval:
+  - interval: 30s
+    then:
+      - esp_now.send:
+          peer_id: hub_peer
+          payload: !lambda |-
+            float t = id(temp_sensor).state;
+            float h = id(hum_sensor).state;
+            std::vector<uint8_t> data(8);
+            memcpy(data.data(), &t, 4);
+            memcpy(data.data() + 4, &h, 4);
+            return data;
+```
+
+### Receiving ESP-NOW Messages (Hub Side)
+```yaml
+esp_now:
+  id: espnow_hub
+  on_message:
+    - lambda: |-
+        if (message.size() == 8) {
+          float t, h;
+          memcpy(&t, message.data(), 4);
+          memcpy(&h, message.data() + 4, 4);
+          ESP_LOGI("espnow", "Temp: %.1f, Hum: %.1f from " MACSTR,
+                   t, h, MAC2STR(mac_address));
+        }
+```
+
+### ESP-NOW Key Config
+| Option | Description |
+|--------|-------------|
+| `peers` | List of peer MAC addresses to communicate with |
+| `on_message` | Trigger when a message is received |
+| `esp_now.send` | Action to send data to a peer or broadcast |
+
+**Notes:**
+- ESP32 only, not supported on ESP8266
+- Max 250 bytes per message
+- Both devices must use the same WiFi channel when coexisting with WiFi
+
+---
+
+## LoRa - SX126x / SX127x
+
+*Since ESPHome 2025.7.0*
+
+Long-range, low-power sub-GHz communication via SPI. Suitable for outdoor sensor nodes with 1-10 km range on battery power.
+
+- **SX127x family**: SX1276, SX1278 (older, very common)
+- **SX126x family**: SX1262, SX1268 (newer, better performance)
+
+### SX127x Setup
+```yaml
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+
+sx127x:
+  id: lora_radio
+  cs_pin: GPIO5
+  rst_pin: GPIO14
+  dio0_pin: GPIO26
+  frequency: 868MHz      # 433MHz / 868MHz / 915MHz depending on region
+  bandwidth: 125kHz
+  spreading_factor: 7    # SF7-SF12, higher = longer range, lower data rate
+  tx_power: 17           # dBm
+
+sensor:
+  - platform: dht
+    pin: GPIO4
+    temperature:
+      name: "Temperature"
+      id: temp_sensor
+
+interval:
+  - interval: 60s
+    then:
+      - sx127x.transmit:
+          id: lora_radio
+          payload: !lambda |-
+            float t = id(temp_sensor).state;
+            std::vector<uint8_t> data(4);
+            memcpy(data.data(), &t, 4);
+            return data;
+```
+
+### SX126x Setup
+```yaml
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+
+sx126x:
+  id: lora_radio
+  cs_pin: GPIO5
+  rst_pin: GPIO14
+  busy_pin: GPIO27
+  frequency: 915MHz
+  bandwidth: 125kHz
+  spreading_factor: 9
+  tx_power: 22
+```
+
+### Receiving LoRa Data
+```yaml
+sx127x:
+  id: lora_radio
+  # ... (connection settings as above)
+  on_receive:
+    - lambda: |-
+        if (packet.size() == 4) {
+          float t;
+          memcpy(&t, packet.data(), 4);
+          ESP_LOGI("lora", "Received temperature: %.1f (RSSI: %d dBm)", t, rssi);
+        }
+```
+
+### LoRa Key Config
+| Option | Description |
+|--------|-------------|
+| `frequency` | Regional frequency: 433MHz (Asia), 868MHz (EU), 915MHz (US) |
+| `spreading_factor` | SF7-SF12. Higher = longer range, lower throughput |
+| `bandwidth` | 125kHz / 250kHz / 500kHz |
+| `tx_power` | Transmit power in dBm |
+| `on_receive` | Trigger when a packet is received |
+
+---
+
+## USB CDC-ACM
+
+*Since ESPHome 2025.12.0 -- ESP32-S3 and ESP32-C3 only*
+
+Native USB serial communication on chips with built-in USB (ESP32-S3, ESP32-C3). Replaces a physical USB-to-serial converter for console logging and serial debugging.
+
+Use cases: USB gadgets, serial debugging without an external USB-UART adapter.
+
+**Requirements:**
+- `esp-idf` framework (not available with Arduino framework)
+- ESP32-S3 or ESP32-C3 with native USB hardware
+- Not supported on ESP8266 or classic ESP32
+
+### Enable USB CDC as Logger Output (ESP32-S3)
+```yaml
+esphome:
+  name: my-usb-device
+  friendly_name: My USB Device
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+usb_cdc:
+
+logger:
+  hardware_uart: USB_CDC
+```
+
+### USB CDC Serial Console
+```yaml
+esphome:
+  name: usb-sensor
+  friendly_name: USB Sensor
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+usb_cdc:
+
+uart:
+  id: usb_serial
+  tx_pin: USBCDC_TX
+  rx_pin: USBCDC_RX
+  baud_rate: 115200
+```
+
+### USB CDC-ACM Key Notes
+| Item | Detail |
+|------|--------|
+| Framework | `esp-idf` required, Arduino not supported |
+| Supported chips | ESP32-S3, ESP32-C3 |
+| Not supported | ESP8266, classic ESP32 (no native USB) |
+| Logger output | Set `hardware_uart: USB_CDC` in `logger:` |
+
+---
+
+## USB UART Host
+
+*Since ESPHome 2026.6.0*
+
+The `usb_uart` component drives external USB-to-serial adapters from a USB host port, exposing each adapter channel as a standard `uart`. A configured channel can be referenced as `uart_id` by any UART-based component (sensors, modbus, displays, etc.). New driver families in 2026.6.0: FTDI FT23XX (#14587) and Prolific PL2303 (#16885), alongside the existing CP210x and CH34x families.
+
+```yaml
+usb_uart:
+  - type: ft23xx            # also pl2303, pl2303gc/gb/gt/gl/ge/gs, cp210x, ch34x, ...
+    channels:
+      - id: usb_serial_1
+        baud_rate: 9600
+        buffer_size: 1024
+# usb_serial_1 is now usable as uart_id on any UART-based component
+```
+
+Full 2026.6.0 details: references/release-2026-6.md
+
+---
+
+## Common Patterns
+
+### I2C Level Shifter
+```yaml
+# Use for 5V I2C devices with 3.3V ESP32
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  frequency: 100kHz  # Lower frequency for level shifters
+```
+
+### UART RS485
+```yaml
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+
+# Control DE/RE pin for half-duplex
+output:
+  - platform: gpio
+    id: rs485_dir
+    pin: GPIO5
+
+# Set direction before TX
+on_...:
+  - output.turn_on: rs485_dir
+  - uart.write: [0x01, 0x03, 0x00, 0x00]
+  - delay: 10ms
+  - output.turn_off: rs485_dir
+```
+
+### Multi-Device SPI
+```yaml
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+
+# Each device needs own CS pin
+display:
+  - platform: ili9xxx
+    cs_pin: GPIO5
+    # ...
+
+sensor:
+  - platform: max6675
+    cs_pin: GPIO15
+    # ...
+```
+
+### Scan I2C on Button Press
+```yaml
+button:
+  - platform: template
+    name: "Scan I2C"
+    on_press:
+      - lambda: |-
+          ESP_LOGI("i2c_scan", "Scanning I2C bus...");
+          for (uint8_t addr = 1; addr < 127; addr++) {
+            Wire.beginTransmission(addr);
+            if (Wire.endTransmission() == 0) {
+              ESP_LOGI("i2c_scan", "Found device at 0x%02X", addr);
+            }
+          }
+          ESP_LOGI("i2c_scan", "Scan complete");
+```
+
+### UART Bridge (TCP)
+```yaml
+uart:
+  id: my_uart
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 115200
+
+stream_server:
+  uart_id: my_uart
+  port: 1234
+```
+
+### Modbus Energy Meter
+```yaml
+modbus_controller:
+  - id: sdm120
+    address: 0x01
+    modbus_id: modbus_hub
+    update_interval: 5s
+
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: sdm120
+    name: "Voltage"
+    register_type: read
+    address: 0x0000
+    value_type: FP32
+    unit_of_measurement: "V"
+
+  - platform: modbus_controller
+    modbus_controller_id: sdm120
+    name: "Current"
+    register_type: read
+    address: 0x0006
+    value_type: FP32
+    unit_of_measurement: "A"
+
+  - platform: modbus_controller
+    modbus_controller_id: sdm120
+    name: "Power"
+    register_type: read
+    address: 0x000C
+    value_type: FP32
+    unit_of_measurement: "W"
+```
+
+---
+
+## Z-Wave Proxy
+
+*Since ESPHome 2025.10*
+
+The Z-Wave Proxy component enables network-based connectivity for Z-Wave hardware by proxying serial communication between a Z-Wave modem SoC and Z-Wave JS over WiFi or Ethernet. This lets you place a Z-Wave stick anywhere and connect it to your Z-Wave JS instance over the network.
+
+```yaml
+# Proxy a Z-Wave USB stick over the network
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 115200
+
+zwave_proxy:
+  uart_id: uart_bus
+```
+
+**Requirements:**
+- ESP32 with UART connected to Z-Wave modem (e.g., Silicon Labs EFR32ZG14/EFR32ZG23)
+- Z-Wave JS configured to connect to the ESPHome device IP
+- UART pins must match the Z-Wave modem's TX/RX
+
+---
+
+## Serial Proxy
+
+*Since ESPHome 2026.3*
+
+Generic serial port proxy over the network. Useful for any device with a serial interface that needs network access.
+
+> **HA 2026.5 compatibility:** Home Assistant 2026.5 introduces a Serial Port Proxy integration that auto-discovers ESPHome devices running `serial_proxy` and exposes the proxied UART as if it were locally attached. Useful for Modbus RS485 meters, DLMS smart meters, or any RS232/RS485 device adoptable by HA integrations such as Denon RS232 (also new in HA 2026.5). See `home-assistant/references/integrations-esphome.md` for the adoption flow. Keep the proxy on an isolated VLAN to avoid exposing raw UART traffic on untrusted networks.
+
+```yaml
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+
+serial_proxy:
+  uart_id: uart_bus
+  port: 6638  # TCP port to listen on
+```
+
+---
+
+## DLMS Smart Meter
+
+*Since ESPHome 2026.2*
+
+The DLMS component reads data from smart electricity meters using the DLMS/COSEM protocol (IEC 62056). Common in European smart meters.
+
+```yaml
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 2400
+  data_bits: 8
+  parity: EVEN
+  stop_bits: 1
+
+dlms:
+  uart_id: uart_bus
+  decryption_key: !secret dlms_key  # If meter uses encryption
+
+sensor:
+  - platform: dlms
+    obis_code: "1.0.1.8.0"
+    name: "Total Energy Import"
+    unit_of_measurement: "kWh"
+    device_class: energy
+    state_class: total_increasing
+
+  - platform: dlms
+    obis_code: "1.0.1.7.0"
+    name: "Active Power"
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+```
+
+### DLMS rebuild (2026.6.0)
+
+In ESPHome 2026.6.0 the DLMS component was rebuilt on top of the external `dlms_parser` library (PR #15458). Sensors, text_sensors, and binary_sensors are now defined by OBIS code, the decryption key is optional (plaintext meters work without it), and the baud rate is configurable (the old hard 2400 baud requirement is gone). New options include `auth_key`, `custom_patterns`, `skip_crc`, and `receive_timeout`. The legacy schema still validates, but the `provider:` key is now ignored and emits a deprecation warning; it is scheduled for removal in 2026.11.0.
+
+Full 2026.6.0 details: references/release-2026-6.md
+
+### DSMR breaking change (2026.6.0)
+
+In ESPHome 2026.6.0 the DSMR `electricity_switch_position` value moved from `sensor:` to `text_sensor:` (PR #16561). Hungarian meters emit this position as a string rather than a number, so it can no longer be a numeric sensor. If you previously configured it under `sensor:`, move the entry to `text_sensor:`.

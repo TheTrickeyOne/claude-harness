@@ -12,7 +12,7 @@
 
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
-CACHE=".cache"
+CACHE="_vendored/.cache"   # gitignored (see .gitignore)
 mkdir -p "$CACHE"
 
 # name|repo-url|license-bucket|skill-subpath-hint

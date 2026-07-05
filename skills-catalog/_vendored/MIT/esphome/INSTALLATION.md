@@ -1,0 +1,134 @@
+# Installation Guide
+
+## Prerequisites
+
+- [Claude Code](https://claude.ai/code) installed and configured
+- Active Claude account with API access
+
+---
+
+## Installation
+
+```bash
+# Add the marketplace repository
+/plugin marketplace add tonylofgren/aurora-smart-home
+
+# Install aurora (since v1.3, ESPHome ships as part of the single aurora plugin — choose one scope)
+/plugin install aurora@aurora-smart-home                    # Global (default)
+/plugin install aurora@aurora-smart-home --scope project    # Team (shared via git)
+/plugin install aurora@aurora-smart-home --scope local      # This project only
+```
+
+Restart Claude Code after installation.
+
+---
+
+## Verify Installation
+
+Test by asking:
+```
+Create a simple ESP32 temperature sensor config
+```
+
+**Expected:** A complete ESPHome YAML configuration with an offer to save.
+
+---
+
+## Update
+
+Since v1.3, all aurora skills (including ESPHome) ship as the single `aurora@aurora-smart-home` plugin.
+
+```bash
+# Inside Claude Code — refreshes every installed plugin
+/reload-plugins
+
+# From your terminal — targeted at aurora
+claude plugin update aurora@aurora-smart-home
+```
+
+The slash command `/plugin` opens an interactive UI; it does not accept arguments like `/plugin update <name>`.
+
+### Enable Auto-Update
+
+1. Run `/plugin` to open the plugin manager
+2. Go to **Marketplaces** tab
+3. Select `aurora-smart-home`
+4. Choose **Enable auto-update**
+
+---
+
+## Uninstall
+
+Use the interactive UI for complete removal:
+
+1. Run `/plugin`
+2. Go to **Installed** tab
+3. Select `aurora`
+4. Choose **Uninstall**
+
+**Note:** The CLI command `/plugin uninstall` only disables plugins.
+
+---
+
+## Change Scope
+
+To move from one scope to another (e.g., user → local):
+
+1. Uninstall via interactive UI (see above)
+2. Reinstall with new scope:
+   ```bash
+   /plugin install aurora@aurora-smart-home --scope local
+   ```
+
+---
+
+## Secrets Configuration
+
+The skill generates configs using `!secret` references. Create your `secrets.yaml`:
+
+### Option 1: Use the helper scripts (recommended)
+
+```bash
+# Python (cross-platform)
+python scripts/generate_secrets.py --output
+
+# Or Bash (Linux/Mac)
+./scripts/generate_secrets.sh --output
+```
+
+This creates a complete `secrets.yaml` with secure random keys.
+
+### Option 2: Manual creation
+
+```yaml
+wifi_ssid: "YourWiFiName"
+wifi_password: "YourWiFiPassword"
+api_encryption_key: "your-32-byte-base64-key"  # Generate: openssl rand -base64 32
+ota_password: "your-ota-password"
+```
+
+See [scripts/README.md](../scripts/README.md) for more options.
+
+---
+
+## Troubleshooting
+
+### Skill Not Triggering
+
+1. Verify installation: `/plugin`
+2. Restart Claude Code
+3. Try rephrasing with keywords: "ESP32", "ESPHome", "sensor config"
+
+### Generated Config Has Errors
+
+1. Check ESPHome version compatibility
+2. Verify pin assignments for your board
+3. Ask: "Fix this ESPHome error: [paste error]"
+
+---
+
+## Getting Help
+
+- **Usage examples:** See [USAGE-GUIDE.md](USAGE-GUIDE.md)
+- **600+ prompts:** See [PROMPT-IDEAS.md](PROMPT-IDEAS.md)
+- **Issues:** [GitHub Issues](https://github.com/tonylofgren/aurora-smart-home/issues)
