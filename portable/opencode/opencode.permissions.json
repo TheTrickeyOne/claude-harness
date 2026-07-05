@@ -1,0 +1,17 @@
+{
+  "$comment": "Merge this 'permission' block into your opencode.json. OpenCode matches bash permission globs with LAST-MATCH-WINS, so the deny patterns for compound operators sit after the default allow. This is the COARSE layer — it blocks the obvious chaining/substitution/redirect/background operators. The precise 'single pipe into a read-only filter' rule needs the TS plugin (plugin/block-compound-bash.ts), because globs can't express the allowlist.",
+  "permission": {
+    "bash": {
+      "*": "allow",
+      "* && *": "deny",
+      "* || *": "deny",
+      "*;*": "deny",
+      "*`*": "deny",
+      "*$(*": "deny",
+      "*>*": "deny",
+      "*<*": "deny",
+      "*&": "deny",
+      "* | *": "ask"
+    }
+  }
+}

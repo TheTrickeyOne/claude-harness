@@ -1,0 +1,31 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+kubeconfig
+*.kubeconfig
+
+# Resolved / local MCP config (generated from .mcp.json.template by bootstrap)
+.mcp.json
+
+# Local Claude Code state
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Vendored skill checkouts (fetched by skills-catalog/vendor.sh; not committed
+# wholesale — cherry-picked skills are committed by hand with attribution)
+skills-catalog/_vendored/.cache/
+
+# Hook log
+harness-hook.log
+
+# Python / runtime cruft
+__pycache__/
+*.pyc
+.claude/scheduled_tasks.lock
+
+# OS / editor cruft
+.DS_Store
+*.swp

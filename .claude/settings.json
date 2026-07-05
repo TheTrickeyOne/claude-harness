@@ -1,0 +1,22 @@
+{
+  "$comment": "Project layer for the adaptive Claude harness. Mirrors the global compound-command hook so the rule holds even when this repo is copied standalone without the global install. /bootstrap rewrites permissions.allow for the chosen stack profile (see docs/stack-profiles/). The hook path here is repo-relative so it works before any global install.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/global/hooks/block-compound-bash.py\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Read(//**)"
+    ],
+    "deny": []
+  }
+}

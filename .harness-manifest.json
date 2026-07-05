@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Records the choices /bootstrap made for THIS repo so it can re-run idempotently (/bootstrap --reconfigure) and so /adopt knows what is already wired. The template repo itself ships this unbootstrapped; each project overwrites it on first bootstrap.",
+  "harnessVersion": "0.1.0",
+  "bootstrapped": false,
+  "bootstrappedAt": null,
+  "profile": null,
+  "projectType": null,
+  "stackComponents": [],
+  "enabledSkills": [],
+  "enabledMcpServers": [],
+  "permissionProfile": null,
+  "secretsBackend": "env",
+  "securityToolingAuthorized": false,
+  "notes": ""
+}

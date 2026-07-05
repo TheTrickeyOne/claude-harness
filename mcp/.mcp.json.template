@@ -1,0 +1,84 @@
+{
+  "$comment": "Candidate MCP servers for this stack. /bootstrap copies the entries for the chosen components into a project .mcp.json (gitignored). All secrets are referenced as ${ENV_VARS} resolved by secrets.sh — no literal secrets here. Command forms shown are the common install paths; adjust per your machine. Audit any community server before trusting it with credentials (see catalog.md).",
+  "mcpServers": {
+    "kubernetes": {
+      "command": "kubernetes-mcp-server",
+      "args": ["--read-only"],
+      "env": { "KUBECONFIG": "${KUBECONFIG}" }
+    },
+    "argocd": {
+      "command": "npx",
+      "args": ["-y", "argocd-mcp@latest", "stdio"],
+      "env": {
+        "ARGOCD_BASE_URL": "${ARGOCD_BASE_URL}",
+        "ARGOCD_API_TOKEN": "${ARGOCD_API_TOKEN}"
+      }
+    },
+    "grafana": {
+      "command": "mcp-grafana",
+      "args": [],
+      "env": {
+        "GRAFANA_URL": "${GRAFANA_URL}",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_SERVICE_ACCOUNT_TOKEN}"
+      }
+    },
+    "github": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "GITHUB_PERSONAL_ACCESS_TOKEN", "ghcr.io/github/github-mcp-server"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}" }
+    },
+    "homeassistant": {
+      "command": "npx",
+      "args": ["-y", "@homeassistant-ai/ha-mcp"],
+      "env": {
+        "HA_URL": "${HA_URL}",
+        "HA_TOKEN": "${HA_TOKEN}"
+      }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "env": { "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}" }
+    },
+    "esp-idf": {
+      "$note": "ESP-IDF v6+ ships this: `idf.py mcp-server`. Requires an activated IDF env.",
+      "command": "idf.py",
+      "args": ["mcp-server"],
+      "env": { "IDF_PATH": "${IDF_PATH}" }
+    },
+    "esp-idf-monitor": {
+      "$note": "jinw06k/esp-idf-monitor-mcp — adds the serial monitor tool the built-in server lacks.",
+      "command": "npx",
+      "args": ["-y", "esp-idf-monitor-mcp"],
+      "env": { "IDF_PATH": "${IDF_PATH}" }
+    },
+    "platformio": {
+      "command": "npx",
+      "args": ["-y", "platformio-mcp"],
+      "env": {}
+    },
+    "embedded-debugger": {
+      "$note": "Adancurusul/embedded-debugger-mcp — probe-rs debug/flash/RTT/memory.",
+      "command": "embedded-debugger-mcp",
+      "args": [],
+      "env": {}
+    },
+    "nordic": {
+      "$note": "Nordic official MCP (remote). Requires Nordic account auth; configure per Nordic's AI-assisted-development docs.",
+      "command": "npx",
+      "args": ["-y", "@nordicsemi/mcp"],
+      "env": { "NORDIC_API_KEY": "${NORDIC_API_KEY}" }
+    },
+    "proxmox": {
+      "$note": "COMMUNITY, no official server. Prefer the proxmox-api skill. Audit code before use; run with a permission-limited API token, read-only where possible.",
+      "$disabled_by_default": true,
+      "command": "python3",
+      "args": ["-m", "proxmox_mcp"],
+      "env": {
+        "PROXMOX_HOST": "${PROXMOX_HOST}",
+        "PROXMOX_TOKEN_ID": "${PROXMOX_TOKEN_ID}",
+        "PROXMOX_TOKEN_SECRET": "${PROXMOX_TOKEN_SECRET}"
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$comment": "Global layer for the adaptive Claude harness. MERGE this into ~/.claude/settings.json (do not blindly overwrite an existing file). The hook path uses $HOME so it resolves after you copy global/hooks/ to ~/.claude/hooks/. See README.md 'Global install'.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 $HOME/.claude/hooks/block-compound-bash.py"
+          }
+        ]
+      }
+    ]
+  }
+}
