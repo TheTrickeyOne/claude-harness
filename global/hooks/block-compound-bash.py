@@ -220,6 +220,16 @@ def evaluate(cmd):
 
 
 def main():
+    if any(a in ("-h", "--help") for a in sys.argv[1:]):
+        print(
+            "block-compound-bash.py — PreToolUse hook that blocks compound Bash.\n\n"
+            "Usage: registered as a Claude Code PreToolUse hook on the Bash tool.\n"
+            "  Reads the tool-call JSON on stdin; on a disallowed command prints a\n"
+            "  deny decision as JSON on stdout, otherwise stays silent. Always exits 0.\n"
+            "  Run the test suite: python3 block-compound-bash.test.py\n"
+        )
+        print(__doc__ or "")
+        return 0
     try:
         raw = sys.stdin.read()
         data = json.loads(raw) if raw.strip() else {}

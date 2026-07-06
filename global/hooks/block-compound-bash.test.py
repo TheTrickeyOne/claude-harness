@@ -120,6 +120,14 @@ def run_io_contract():
 
 
 def main():
+    if any(a in ("-h", "--help") for a in sys.argv[1:]):
+        print(
+            "block-compound-bash.test.py — pinned behavior test for the hook.\n\n"
+            "Usage: python3 block-compound-bash.test.py\n"
+            "  Runs the unit case table + the stdin/stdout IO contract.\n"
+            "  Exits 0 if all pass, nonzero (with FAIL lines) on any regression.\n"
+        )
+        return 0
     unit = run_unit()
     io = run_io_contract()
     for cmd, exp, got, reason in unit:

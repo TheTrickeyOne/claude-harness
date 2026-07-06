@@ -17,6 +17,31 @@
 set -euo pipefail
 shopt -s nullglob
 
+usage() {
+  cat <<'EOF'
+harness-init.sh — lightweight init for a simple project.
+
+Usage:
+  bash harness-init.sh [TARGET_DIR]
+  bash harness-init.sh -h | --help
+
+Adds AGENTS.md + CLAUDE.md (@AGENTS.md) + ~5 core dev skills
+(test-driven-development, systematic-debugging, verification-before-completion,
+git-pr-workflow, secrets-hygiene) and a secrets .gitignore. No vendored catalog,
+no interview, no MCP. Existing AGENTS.md/CLAUDE.md are left untouched.
+
+Args:
+  TARGET_DIR   Directory to set up (created if missing). Defaults to cwd.
+
+Run it from your canonical harness clone. For a stack-heavy project use the full
+flow instead (see README: "Use in a project").
+EOF
+}
+
+case "${1:-}" in
+  -h|--help) usage; exit 0 ;;
+esac
+
 # Resolve the harness repo root (this script lives in <root>/bin/).
 HARNESS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 

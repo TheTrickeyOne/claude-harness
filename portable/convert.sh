@@ -20,9 +20,27 @@ cd "$(dirname "${BASH_SOURCE[0]}")/.."    # repo root
 # rather than the "run /bootstrap" hint.
 target="${1:-}"
 case "$target" in
+  -h|--help)
+    cat <<'EOF'
+convert.sh — expose this harness's skills to another agent.
+
+Usage:
+  bash portable/convert.sh {codex|gemini|opencode}
+  bash portable/convert.sh -h | --help
+
+Targets:
+  codex      symlink .claude/skills/* into ~/.codex/skills (live; tracks edits)
+  gemini     copy .claude/skills into $GEMINI_SKILLS_DIR or ~/.gemini/skills
+  opencode   copy .claude/skills into ~/.config/opencode/skills
+
+Requires the project to be bootstrapped (.claude/skills/ present). Self-cd's to
+the repo root, so it can be run from anywhere.
+EOF
+    exit 0
+    ;;
   codex|gemini|opencode) ;;
   *)
-    echo "usage: bash portable/convert.sh {codex|gemini|opencode}" >&2
+    echo "usage: bash portable/convert.sh {codex|gemini|opencode}  (-h for help)" >&2
     exit 2
     ;;
 esac

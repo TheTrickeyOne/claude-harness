@@ -26,6 +26,26 @@
 #     you'd add a `bw get`-based backend instead. Given Infisical is already
 #     self-hosted here, prefer Layer 2 over any of these.
 
+# --help works whether this is sourced or executed directly.
+case "${1:-}" in
+  -h|--help)
+    cat <<'EOF'
+secrets.sh — Layer-1 fallback secrets resolver.
+
+Usage:
+  source mcp/secrets.sh          then launch the agent (exports ${VAR}s)
+  bash   mcp/secrets.sh -h|--help
+
+SOURCE this (don't just run it) so the resolved secrets land in your shell and
+${VAR} references in .mcp.json pick them up. Reads mcp/.env (or $HARNESS_ENV_FILE).
+Backend is set by HARNESS_SECRETS_BACKEND in .env: env | 1password | bitwarden.
+
+Preferred path is Infisical `run` (Layer 2), not this — see docs/secrets.md.
+EOF
+    return 0 2>/dev/null || exit 0
+    ;;
+esac
+
 set -euo pipefail
 
 _here="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"

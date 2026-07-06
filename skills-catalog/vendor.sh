@@ -11,6 +11,31 @@
 # update PINS below when you re-pin.
 
 set -euo pipefail
+
+case "${1:-}" in
+  -h|--help)
+    cat <<'EOF'
+vendor.sh — shallow-clone the public skill repos this harness vendors.
+
+Usage:
+  bash skills-catalog/vendor.sh [NAME ...]     (default: all repos)
+  bash skills-catalog/vendor.sh -h | --help
+
+Clones each upstream repo into the gitignored _vendored/.cache/. You then
+cherry-pick the specific skill dir into _vendored/<LICENSE>/, keep its LICENSE,
+and record it in ATTRIBUTION.md. Whole repos are never auto-copied — vendoring
+is deliberate and per-skill so licenses stay clean.
+
+Args:
+  NAME ...   One or more repo keys to fetch (e.g. superpowers trailofbits).
+             Omit to fetch all. Keys are the first field of the REPOS list.
+
+Requires git. Run from anywhere (self-cd's to skills-catalog/).
+EOF
+    exit 0
+    ;;
+esac
+
 cd "$(dirname "${BASH_SOURCE[0]}")"
 CACHE="_vendored/.cache"   # gitignored (see .gitignore)
 mkdir -p "$CACHE"
