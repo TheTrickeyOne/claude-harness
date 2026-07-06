@@ -54,12 +54,18 @@ no bootstrap.
 
 ### Simple project + good-habits skills — one command
 Adds `AGENTS.md` + ~5 core dev skills (TDD, debugging, verification, git/secrets
-hygiene). A few KB, no 158 MB catalog, no interview, no MCP:
-```
-bash ~/src/claude-harness/bin/harness-init.sh ~/Projects/foo
-```
-(run it from your canonical clone; target defaults to the current dir. Leaves any
-existing `AGENTS.md`/`CLAUDE.md` untouched.)
+hygiene). A few KB, no 158 MB catalog, no interview, no MCP. Two ways:
+
+- **Before opening Claude** (from your canonical clone; target defaults to cwd):
+  ```
+  bash ~/src/claude-harness/bin/harness-init.sh ~/Projects/foo
+  ```
+- **Inside Claude**, in a project that has the harness copied in:
+  ```
+  > /bootstrap light
+  ```
+
+Both leave any existing `AGENTS.md`/`CLAUDE.md` untouched.
 
 ### Stack-heavy project — full bootstrap
 ```

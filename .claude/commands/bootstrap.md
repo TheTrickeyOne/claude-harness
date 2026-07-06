@@ -1,6 +1,6 @@
 ---
 description: Interview the user and rewrite this harness for the current project's stack
-argument-hint: "[--profile <name>] [--reconfigure]"
+argument-hint: "[light] [--profile <name>] [--reconfigure]"
 ---
 
 # /bootstrap — adapt the harness to this project
@@ -10,11 +10,39 @@ the phases below. Be decisive; ask only what you cannot infer. Everything you
 change is inside this repo — never touch `~/.claude` from here.
 
 Arguments: `$ARGUMENTS`
+- `light` (or `--light`): **skip the interview entirely** and do the minimal
+  setup for a simple project. See "Light mode" below. This is the in-session
+  equivalent of `bin/harness-init.sh`.
 - `--profile <name>`: skip the interview and load answers from
   `docs/stack-profiles/<name>.md`. Valid names: list the files in that dir.
 - `--reconfigure`: re-run using the existing `.harness-manifest.json` as the
   starting point; confirm/adjust rather than ask from scratch. Must be
   idempotent — do not duplicate skills, permissions, or MCP entries.
+
+## Light mode (`/bootstrap light`)
+If `light`/`--light` is in the arguments, do ONLY this and stop — no interview,
+no questions, no MCP, no stack profile:
+1. **Keep `AGENTS.md` as-is** — leave the generic `## Project` section (the
+   stack-agnostic contract is all a simple project needs). Do not fill it in.
+2. **Prune `.claude/skills/` to the core-dev set only** (same 5 as
+   `bin/harness-init.sh`), copied from `skills-catalog/`, licenses preserved:
+   `_vendored/MIT/superpowers-test-driven-development`,
+   `_vendored/MIT/superpowers-systematic-debugging`,
+   `_vendored/MIT/superpowers-verification-before-completion`,
+   `_custom/git-pr-workflow`, `_custom/secrets-hygiene`.
+   Remove any other skills already staged in `.claude/skills/`.
+3. **Ensure `.gitignore`** has the secrets essentials (`.env`, `*.key`, `*.pem`,
+   `kubeconfig`, `.claude/settings.local.json`) — add if missing, don't dup.
+4. **Leave `.claude/settings.json` at defaults** — keep the compound-command
+   hook block; do not write a stack permission profile.
+5. **Record** in `.harness-manifest.json`: `bootstrapped: true`,
+   `profile: "light"`, `projectType: "simple"`, `enabledSkills` = the 5 above,
+   empty `enabledMcpServers`, `bootstrappedAt` = session date (don't invent one).
+6. **Suggest** trimming the staging catalog to stay lean:
+   `echo "skills-catalog/_vendored/" >> .gitignore` (and optionally
+   `rm -rf skills-catalog/_vendored`), since only `.claude/skills/` is needed now.
+7. Report what was set up in 2–3 lines. Do not commit. Then STOP — skip all
+   phases below.
 
 ## Phase 0 — Orient
 1. Read `.harness-manifest.json`. If `bootstrapped` is already true and
