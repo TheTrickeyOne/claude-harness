@@ -22,7 +22,7 @@ Vendored 2026-07-05. 98 SKILL.md files across the buckets.
 | `MIT/kubernetes-skill` | LukasNiessen/kubernetes-skill | MIT | `a34b06a` |
 | `APACHE/terraform-skill` | antonbabenko/terraform-skill | Apache-2.0 | `0a3a4a6` |
 | `CC-BY-SA/tob-*` (6: static-analysis[+codeql/sarif], semgrep-rule-creator, variant-analysis, supply-chain-risk-auditor, agentic-actions-auditor, insecure-defaults) | trailofbits/skills | CC-BY-SA-4.0 | `cfe5d7b` |
-| `MIT/pentest-agents/agents` (core: code-auditor, detection-engineer, recon-advisor, forensics-analyst, **_scope-guard**) | 0xSteph/pentest-ai-agents | MIT | `1ef99f2` |
+| `MIT/pentest-agents` (FULL set: all 50 agents + **_scope-guard**, commands/, docs/, examples/, db/) | 0xSteph/pentest-ai-agents | MIT | `1ef99f2` |
 | `APACHE/cyberref/*` (8 DFIR/SOC/Sigma skills) | mukul975/Anthropic-Cybersecurity-Skills | Apache-2.0 | `673da1f` |
 | `MIT/security-review` (`/security-review` command) | anthropics/claude-code-security-review | MIT | `0c6a49f` |
 | `MPL/hashicorp-terraform` (4: style-guide, test, refactor-module, terraform-stacks) | hashicorp/agent-skills | MPL-2.0 | `339a113` |
@@ -35,9 +35,14 @@ Vendored 2026-07-05. 98 SKILL.md files across the buckets.
 | `MIT/embeddedskills` (12 toolchain skills) | zhinkgit/embeddedskills | MIT | `60dfb5d` |
 
 ## Selection notes
-- **pentest-agents**: only a core subset was taken (4 agents), and the mandatory
-  `_scope-guard.md` (authorization gate + hard-refusal list) travels with them.
-  The other ~46 offensive agents were deliberately left out.
+- **pentest-agents**: the FULL agent set (all 50 + `_scope-guard.md`) is
+  vendored for authorized adversarial self-testing of the owner's own homelab
+  and devices (incl. the Pico-based network HSM). The `_scope-guard.md`
+  authorization gate + hard-refusal list is retained and applies to every
+  execution-capable agent — it keeps the tooling pointed at assets the operator
+  owns or is contracted to test. Relevant to this stack: iot-pentester,
+  wireless-pentester, llm-redteam, cicd-redteam, container-breakout,
+  credential-tester, crypto-analyzer, network-attacker, and more.
 - **cyberref**: 8 *defensive* DFIR/SOC/Sigma skills only (no offensive skills);
   each keeps its own per-skill LICENSE.
 - **cc-devops**: 5 infra generator/validator pairs (10 skills) of the ~31.

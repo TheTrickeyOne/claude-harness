@@ -8,22 +8,31 @@ securityToolingAuthorized: true
 
 # Profile: redteam
 
-Authorized security testing / auditing of your OWN infrastructure (or systems
-he is contracted to test). Defensive-first; offensive tooling is scope-gated.
+Authorized security testing of your OWN infrastructure (or systems you are
+contracted to test) — adversarially stress-testing the homelab, network, and
+devices (incl. the Pico-based network HSM) that hold sensitive personal /
+financial / medical data, so real attackers can't get in. Red-team and blue-team
+are two halves of the same defensive job here; the full offensive toolset is
+enabled.
 
-## Authorization gate (required)
-Enable this profile ONLY after confirming, in `.harness-manifest.json` and
-`AGENTS.md`, the explicit scope: which hosts/networks are in scope and that the
-user owns them or holds written authorization. Skills that can execute against
-live targets stay disabled until scope is recorded. No DoS, no mass-scanning, no
-targeting of third-party systems.
+## Authorization gate (the one guardrail — and it works for you)
+The `_scope-guard` that ships with pentest-agents stays active: it keeps every
+execution-capable agent pointed at assets you own or are authorized to test, and
+hard-refuses DoS, mass-scanning, and targeting third-party systems. That's not a
+capability limit on your own lab — it's what stops an agent from wandering off
+your network. Record the in-scope hosts/networks in `.harness-manifest.json` and
+`AGENTS.md` before running live tools.
 
 ## Skills enabled
 security-review, trailofbits-static-analysis, trailofbits-semgrep-rule-creator,
 trailofbits-supply-chain-risk-auditor, trailofbits-agentic-actions-auditor,
-pentest-agents (scope-guarded), opnsense-api, secrets-hygiene,
-systematic-debugging, docs-diagrams, git-pr-workflow.
-Blue-team/DFIR reference skills (Sigma/SOC) added on request.
+trailofbits-variant-analysis, trailofbits-insecure-defaults,
+**pentest-agents (FULL 50-agent set + _scope-guard)**, opnsense-api,
+secrets-hygiene, systematic-debugging, docs-diagrams, git-pr-workflow.
+Blue-team/DFIR reference skills (cyberref Sigma/SOC/forensics) included.
+Stack-relevant offensive agents: iot-pentester, wireless-pentester, llm-redteam,
+cicd-redteam, container-breakout, credential-tester, crypto-analyzer,
+network-attacker, web-hunter, api-security.
 
 ## MCP servers
 github, context7. No target-facing MCP by default.
@@ -43,6 +52,8 @@ Deliberately minimal — add scanning/exec permissions per engagement, scoped to
 the authorized targets only.
 
 ## Safety notes to write into AGENTS.md ## Project
-- State the authorized scope explicitly. Refuse anything outside it.
-- Prefer defensive analysis (static analysis, config audit, log review) over
-  live exploitation unless the engagement requires it and scope permits.
+- State the authorized scope explicitly (your networks/hosts/devices). The
+  scope-guard refuses anything outside it — that's the point.
+- Full offensive tooling is available for self-testing; use it to find and fix
+  weaknesses before an attacker does. Pair each finding with the fix (blue-team
+  side) so the exercise hardens the lab, not just proves it's breakable.
