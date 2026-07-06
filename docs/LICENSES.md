@@ -1,8 +1,9 @@
 # License map
 
-The harness's own files (hooks, custom skills, commands, docs) are the owner's
-to license as they see fit. Vendored public skills keep their upstream licenses,
-tracked here and in `skills-catalog/_vendored/ATTRIBUTION.md`.
+The harness's own files (hook, custom skills, commands, profiles, MCP config,
+portability adapters, docs) are **MIT** — see the root `LICENSE`. Vendored public
+skills keep their upstream licenses, tracked here and in
+`skills-catalog/_vendored/ATTRIBUTION.md`.
 
 ## Obligations cheat-sheet
 

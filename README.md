@@ -74,6 +74,8 @@ Three composable layers (full detail in **`docs/secrets.md`**):
 
 ## Licensing
 
-Vendored public skills keep their upstream licenses; copyleft ones
-(CC-BY-SA/GPL/MPL) are isolated in per-license subdirs. Full map:
+This harness's own code (hook, `skills-catalog/_custom/`, commands, profiles, MCP
+config, portability adapters, docs) is **MIT** — see `LICENSE`. Vendored public
+skills under `skills-catalog/_vendored/` keep their upstream licenses; copyleft
+ones (CC-BY-SA/GPL/MPL) are isolated in per-license subdirs. Full map:
 `docs/LICENSES.md`.
