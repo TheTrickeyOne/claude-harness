@@ -40,17 +40,39 @@ allowed.
 
 ## Use in a project
 
-**New project:**
-```
-cp -R claude-harness/. ~/Projects/new-thing/
-```
-Then open the project in Claude Code and run `/bootstrap`. It interviews you
-about the stack, rewrites `AGENTS.md`'s `## Project` section, prunes
-`.claude/skills/` to the relevant skills, writes a permission profile, wires the
-right MCP servers, and records everything in `.harness-manifest.json`.
+Pick the weight that matches the project. Most of the time you want one of the
+first two — the full flow is only for stack-heavy work.
 
-Skip the interview with a canned profile: `/bootstrap --profile k8s-infra`
-(see `docs/stack-profiles/`). Re-tune later with `/bootstrap --reconfigure`.
+### Simple project — nothing to install
+The compound-command hook and work-style prefs are already global (in
+`~/.claude`), so a bare new directory is already covered:
+```
+mkdir foo && cd foo && git init && claude
+```
+Optionally run the built-in `/init` for a project `CLAUDE.md`. No harness copy,
+no bootstrap.
+
+### Simple project + good-habits skills — one command
+Adds `AGENTS.md` + ~5 core dev skills (TDD, debugging, verification, git/secrets
+hygiene). A few KB, no 158 MB catalog, no interview, no MCP:
+```
+bash ~/src/claude-harness/bin/harness-init.sh ~/Projects/foo
+```
+(run it from your canonical clone; target defaults to the current dir. Leaves any
+existing `AGENTS.md`/`CLAUDE.md` untouched.)
+
+### Stack-heavy project — full bootstrap
+```
+npx degit TheTrickeyOne/claude-harness new-thing
+cd new-thing && claude
+> /bootstrap        # or: /bootstrap --profile k8s-infra
+```
+`/bootstrap` interviews you about the stack, rewrites `AGENTS.md`'s `## Project`
+section, prunes `.claude/skills/` to the relevant skills, writes a permission
+profile, wires MCP servers, and records choices in `.harness-manifest.json`.
+Re-tune later with `/bootstrap --reconfigure`. Then trim the staging catalog:
+`echo "skills-catalog/_vendored/" >> .gitignore` (the pruned skills you use live
+in `.claude/skills/`).
 
 **Existing project (already has files):** run `/adopt` instead — it merges the
 harness in without clobbering existing `CLAUDE.md`/`.claude/` content.
