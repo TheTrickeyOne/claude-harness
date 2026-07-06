@@ -1,0 +1,52 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea
+.vscode
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# MCP servers
+tools/skill-router/.chromadb/
+tools/*/uv.lock
+
+# Claude Code local state
+.claude/agents
+.claude/commands
+.claude/skills
+
+# bwrap sandbox sentinels (zero-byte read-only files)
+.bash_profile
+.bashrc
+.profile
+.zprofile
+.zshrc
+.gitconfig
+.gitmodules
+.ripgreprc
+HEAD
+config
+# Git internal directories (bare repo artifacts)
+/hooks
+objects
+refs
+
+# Engagement data — never commit
+loot/
+evidence/
+engagement/
+
+# MkDocs build output
+site/

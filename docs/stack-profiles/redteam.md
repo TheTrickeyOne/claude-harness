@@ -29,10 +29,19 @@ trailofbits-supply-chain-risk-auditor, trailofbits-agentic-actions-auditor,
 trailofbits-variant-analysis, trailofbits-insecure-defaults,
 **pentest-agents (FULL 50-agent set + _scope-guard)**, opnsense-api,
 secrets-hygiene, systematic-debugging, docs-diagrams, git-pr-workflow.
-Blue-team/DFIR reference skills (cyberref Sigma/SOC/forensics) included.
+Blue-team (cyberref, 47 skills): detection-engineering, threat-hunting,
+container/k8s defense (falco, k8s-audit, rbac-hardening), network monitoring
+(suricata, zeek, C2-over-DNS), IoT/OT/BLE detection, LLM prompt-injection
+detection, CI/CD supply-chain detection, and ransomware incident response +
+backup-integrity validation.
 Stack-relevant offensive agents: iot-pentester, wireless-pentester, llm-redteam,
 cicd-redteam, container-breakout, credential-tester, crypto-analyzer,
 network-attacker, web-hunter, api-security.
+
+**Live tooling:** `red-run` (GPL, `_vendored/GPL/red-run/`) executes real tools
+(nmap/sqlmap/hashcat/impacket) with operator-approval gates for end-to-end
+self-testing — activate via its own installer (see `mcp/catalog.md`). The
+advisory pentest-agents tell you what to run; red-run closes the loop.
 
 ## MCP servers
 github, context7. No target-facing MCP by default.

@@ -23,7 +23,8 @@ Vendored 2026-07-05. 98 SKILL.md files across the buckets.
 | `APACHE/terraform-skill` | antonbabenko/terraform-skill | Apache-2.0 | `0a3a4a6` |
 | `CC-BY-SA/tob-*` (6: static-analysis[+codeql/sarif], semgrep-rule-creator, variant-analysis, supply-chain-risk-auditor, agentic-actions-auditor, insecure-defaults) | trailofbits/skills | CC-BY-SA-4.0 | `cfe5d7b` |
 | `MIT/pentest-agents` (FULL set: all 50 agents + **_scope-guard**, commands/, docs/, examples/, db/) | 0xSteph/pentest-ai-agents | MIT | `1ef99f2` |
-| `APACHE/cyberref/*` (8 DFIR/SOC/Sigma skills) | mukul975/Anthropic-Cybersecurity-Skills | Apache-2.0 | `673da1f` |
+| `APACHE/cyberref/*` (47 blue-team: DFIR/SOC/Sigma + detection-engineering, threat-hunting, container/k8s defense, network monitoring, IoT/OT/BLE, LLM defense, CI/CD supply-chain, ransomware IR) | mukul975/Anthropic-Cybersecurity-Skills | Apache-2.0 | `673da1f` |
+| `GPL/red-run` (FULL framework: live-tool orchestrator — nmap/sqlmap/hashcat/impacket via MCP, operator-approval gates; skills/agents/operator/tools/install) | blacklanternsecurity/red-run | GPL-3.0 | `050ac1f` |
 | `MIT/security-review` (`/security-review` command) | anthropics/claude-code-security-review | MIT | `0c6a49f` |
 | `MPL/hashicorp-terraform` (4: style-guide, test, refactor-module, terraform-stacks) | hashicorp/agent-skills | MPL-2.0 | `339a113` |
 | `APACHE/cc-devops/skills` (10: terraform/ansible/k8s-yaml/helm/dockerfile gen+validator pairs) | akin-ozer/cc-devops-skills | Apache-2.0 | `feaf2b2` |

@@ -32,6 +32,17 @@ sweep. `/bootstrap` pulls the entries for the chosen components from
 | **proxmox** | **No official server.** Community forks only (e.g. `RekklesNA/ProxmoxMCP-Plus`), uncertain maintenance. Prefer the `proxmox-api` skill. If you enable an MCP, read its code first — it holds root-ish API tokens — and use a permission-limited/read-only token. Disabled by default in the template. |
 | prometheus-direct | `pab1it0/prometheus-mcp-server` — only if not already covered by grafana. |
 
+## Live offensive tooling (authorized self-testing only)
+
+- **red-run** (vendored at `skills-catalog/_vendored/GPL/red-run/`, GPL-3.0) is a
+  full framework that *executes* live tools (nmap, sqlmap, hashcat, impacket)
+  through its own MCP with operator-approval gates — for lab/CTF/self-testing,
+  not a drop-in server. Activate it via its own `install.sh`/`preflight.sh` and
+  the `.mcp.json` it ships; it needs the underlying tools installed. It carries
+  its own operator/approval harness, so it is NOT auto-wired into the harness
+  `.mcp.json.template`. Point it only at assets you own or are authorized to
+  test. Pairs with the (advisory) `pentest-agents` set.
+
 ## Skip (no credible MCP → use skills/CLIs)
 
 - **Talos** — no credible server; use the `talos-ops` skill wrapping `talosctl`.
