@@ -2,7 +2,8 @@
 # convert.sh — expose this harness's skills to other agents.
 #
 # SKILL.md is portable; the main work is putting the skill dirs where each agent
-# looks. This does the common layouts. Run from the repo root.
+# looks. This does the common layouts. Self-cd's to the repo root, so it can be
+# run from anywhere.
 #
 #   bash portable/convert.sh codex     # symlink skills into ~/.codex/skills
 #   bash portable/convert.sh gemini    # copy skills into Gemini's skills dir
@@ -12,7 +13,19 @@
 # dedicated tool like jduncan-rva/skill-porter; this handles the 80% case.
 
 set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/.."   # repo root
+shopt -s nullglob                        # empty skills dir -> loop runs 0 times
+cd "$(dirname "${BASH_SOURCE[0]}")/.."    # repo root
+
+# Validate the target BEFORE checking for skills, so a typo/no-arg shows usage
+# rather than the "run /bootstrap" hint.
+target="${1:-}"
+case "$target" in
+  codex|gemini|opencode) ;;
+  *)
+    echo "usage: bash portable/convert.sh {codex|gemini|opencode}" >&2
+    exit 2
+    ;;
+esac
 
 SRC=".claude/skills"
 if [[ ! -d "$SRC" ]]; then
@@ -20,16 +33,21 @@ if [[ ! -d "$SRC" ]]; then
   exit 1
 fi
 
-target="${1:-}"
 case "$target" in
   codex)
     dest="$HOME/.codex/skills"
     mkdir -p "$dest"
+    count=0
     for d in "$SRC"/*/; do
+      [[ -d "$d" ]] || continue          # guard against a stray glob match
       name="$(basename "$d")"
       ln -sfn "$PWD/$d" "$dest/$name"
       echo "linked $name -> $dest/$name"
+      count=$((count + 1))
     done
+    if [[ $count -eq 0 ]]; then
+      echo "no skills in $SRC — nothing to link (run /bootstrap to populate)"
+    fi
     ;;
   gemini)
     dest="${GEMINI_SKILLS_DIR:-$HOME/.gemini/skills}"
@@ -42,9 +60,5 @@ case "$target" in
     mkdir -p "$dest"
     cp -R "$SRC"/. "$dest"/
     echo "copied skills to $dest"
-    ;;
-  *)
-    echo "usage: bash portable/convert.sh {codex|gemini|opencode}" >&2
-    exit 2
     ;;
 esac
