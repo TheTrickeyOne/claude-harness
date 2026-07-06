@@ -70,10 +70,11 @@
       "env": { "NORDIC_API_KEY": "${NORDIC_API_KEY}" }
     },
     "proxmox": {
-      "$note": "COMMUNITY, no official server. Prefer the proxmox-api skill. Audit code before use; run with a permission-limited API token, read-only where possible.",
+      "$note": "DEFERRED — no official server and community forks are unaudited. Decision (2026-07): skip a fork and build a proper Proxmox MCP later. Use the proxmox-api skill in the meantime. Left here as a placeholder; not wired.",
+      "$deferred": true,
       "$disabled_by_default": true,
-      "command": "python3",
-      "args": ["-m", "proxmox_mcp"],
+      "command": "UNSET",
+      "args": [],
       "env": {
         "PROXMOX_HOST": "${PROXMOX_HOST}",
         "PROXMOX_TOKEN_ID": "${PROXMOX_TOKEN_ID}",

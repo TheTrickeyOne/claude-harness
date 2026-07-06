@@ -29,7 +29,7 @@ sweep. `/bootstrap` pulls the entries for the chosen components from
 
 | Server | Why the caution |
 |---|---|
-| **proxmox** | **No official server.** Community forks only (e.g. `RekklesNA/ProxmoxMCP-Plus`), uncertain maintenance. Prefer the `proxmox-api` skill. If you enable an MCP, read its code first — it holds root-ish API tokens — and use a permission-limited/read-only token. Disabled by default in the template. |
+| **proxmox** | **DEFERRED (decision 2026-07).** No official server; community forks are unaudited and hold root-ish API tokens. Rather than wire a shaky fork, the plan is to **build a proper Proxmox MCP later**. Until then use the `proxmox-api` skill (read-first, confirm-on-destroy). The template entry is a non-wired placeholder. |
 | prometheus-direct | `pab1it0/prometheus-mcp-server` — only if not already covered by grafana. |
 
 ## Live offensive tooling (authorized self-testing only)
