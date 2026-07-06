@@ -53,7 +53,22 @@ sweep. `/bootstrap` pulls the entries for the chosen components from
 
 ## Secrets
 
-Every `env` value in `.mcp.json.template` is a `${VAR}` reference resolved by
-`secrets.sh` from `.env`. To move off `.env` to 1Password/Bitwarden later, edit
-only `secrets.sh` (see its header). Never put a literal secret in `.mcp.json` or
-a skill.
+Every `env` value in `.mcp.json.template` is a backend-agnostic `${VAR}`
+reference. Never put a literal secret in `.mcp.json` or a skill. Three layers,
+detailed in **[`docs/secrets.md`](../docs/secrets.md)**:
+
+1. **`.env` fallback** — plaintext values exported by `secrets.sh` (quick start /
+   no-Infisical hosts).
+2. **Infisical `run`** (baseline) — `infisical run -- <agent>` injects a project's
+   secrets as env; nothing on disk. Self-hosted, MIT core. In-cluster: the
+   Infisical k8s operator syncs into native Secrets.
+3. **Agent Vault** (hardening, research preview) — a TLS-intercepting egress proxy
+   injects header-based API tokens on the wire, so the agent only holds
+   `__placeholder__` strings. Runs as ONE shared service on a host separate from
+   the agents; trust is solved with a name-constrained intermediate off your own
+   internal PKI (step-ca / cert-manager), distributed via Ansible — NOT a public
+   Let's Encrypt cert (which can't sign for the upstream domains it impersonates).
+
+Note (1Password/Bitwarden): 1Password has no free tier; Vaultwarden can't do
+Secrets Manager (`bws`) — its `sdk-secrets` stayed proprietary. Since Infisical is
+already self-hosted here, it supersedes both. See `docs/secrets.md`.

@@ -63,9 +63,14 @@ see `portable/` for the hook ports and skill-mapping notes, and
 
 ## Secrets
 
-`.env` today (gitignored), referenced via `${VARS}` in `.mcp.json`. To move to
-1Password or Bitwarden later, only `mcp/secrets.sh` changes — no MCP config or
-skill edits. See `mcp/catalog.md`.
+Three composable layers (full detail in **`docs/secrets.md`**):
+1. **`.env`** (gitignored), referenced via `${VARS}` in `.mcp.json` — quick start.
+2. **Infisical `run`** — self-hosted, injects secrets as env; nothing on disk.
+3. **Agent Vault** — TLS-intercepting egress proxy so the agent never holds raw
+   API tokens (only placeholders); trust via your own internal PKI, not a public
+   cert. Pilot layer (research preview).
+
+`${VAR}` references are backend-agnostic — only how they're populated changes.
 
 ## Licensing
 

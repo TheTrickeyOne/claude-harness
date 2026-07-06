@@ -1,21 +1,30 @@
 #!/usr/bin/env bash
-# secrets.sh — the single seam for MCP secrets.
+# secrets.sh — the FALLBACK secrets seam (Layer 1).
 #
-# Source this BEFORE launching your agent so ${VAR} references in .mcp.json
-# resolve from the process environment:
+# This is the no-manager path. The preferred path is Infisical `run` (Layer 2)
+# and, for hardening, Agent Vault (Layer 3). See docs/secrets.md for the full
+# layered model — READ THAT FIRST.
 #
-#     source mcp/secrets.sh && claude
+#   Preferred:  infisical run --projectId <id> --env prod -- claude
+#   Fallback:   source mcp/secrets.sh   (then launch the agent)
 #
+# Source this so ${VAR} references in .mcp.json resolve from the environment.
 # Backends (set HARNESS_SECRETS_BACKEND in .env):
 #   env        values live literally in .env               (default, today)
 #   1password  values in .env are op:// refs, resolved via `op read`
-#   bitwarden  values in .env are BWS secret IDs, resolved via `bws secret get`
+#   bitwarden  values in .env are Secrets Manager IDs, resolved via `bws secret get`
 #
 # Switching backends is a ONE-FILE change: only this script and the form of the
 # values in .env change. .mcp.json and every skill stay identical.
 #
-# Proton Pass has no secrets CLI as of 2026-07, so it is not a backend option;
-# stay on `env` or use 1Password/Bitwarden.
+# Caveats (see docs/secrets.md):
+#   - Proton Pass has no secrets CLI — not a backend option.
+#   - 1Password has no free tier.
+#   - The `bitwarden` backend uses Bitwarden Secrets Manager (`bws`). This does
+#     NOT work against self-hosted Vaultwarden (Vaultwarden implements only the
+#     password-manager API; Secrets Manager stayed proprietary). For Vaultwarden
+#     you'd add a `bw get`-based backend instead. Given Infisical is already
+#     self-hosted here, prefer Layer 2 over any of these.
 
 set -euo pipefail
 
